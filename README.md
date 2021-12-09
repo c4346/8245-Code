@@ -4,8 +4,12 @@
 * Probably temporary until I create a new github account for our team
 * Ask Carl if something is broken, he probably won't know either
 
-## Test Wall
-* I am the cheese
+## How to Contribute
+* Create new branch in Android Studio, name it your name or something
+* Make Changes
+* Commit and Push to branch
+* Create pull request on github, from your branch to master
+* I will approve it
 
 ## NOTICE
 

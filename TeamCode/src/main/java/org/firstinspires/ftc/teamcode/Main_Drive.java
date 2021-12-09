@@ -51,7 +51,7 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @TeleOp(name="Basic: Linear OpMode", group="Linear Opmode")
-@Disabled
+//@Disabled
 public class Main_Drive extends LinearOpMode {
 
     // Declare OpMode members.
@@ -69,8 +69,8 @@ public class Main_Drive extends LinearOpMode {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        leftDrive  = hardwareMap.get(DcMotor.class, "f left");
+        rightDrive = hardwareMap.get(DcMotor.class, "f right");
         elevation = hardwareMap.get(DcMotor.class, "elevation");
         pusher = hardwareMap.get(DcMotor.class, "push");
 

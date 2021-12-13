@@ -93,8 +93,8 @@ public class Main_Drive extends LinearOpMode {
             double pushPower;
             // Tank Mode uses one stick to control each wheel.
             // - This requires no math, but it is hard to drive forward slowly and keep straight.
-             leftPower  = -gamepad1.left_stick_y ;
-             rightPower = -gamepad1.right_stick_y ;
+             leftPower  = gamepad1.left_stick_y ;
+             rightPower = gamepad1.right_stick_y ;
              elevationPower = -gamepad2.right_stick_y;
              pushPower = -gamepad2.left_stick_y;
 

@@ -36,6 +36,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import java.lang.Math;
+import java.util.HashMap;
+
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -56,10 +59,41 @@ public class Main_Drive extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
-    private DcMotor elevation = null;
-    private DcMotor pusher = null;
+    private DcMotor leftDrive;
+    private DcMotor rightDrive;
+    private DcMotor elevation;
+    private DcMotor pusher;
+
+    private double maxPower = 100d;
+    private double interceptPower = 100d;
+
+    private double leftBias = 0d;
+    private double rightBias = 0d;
+    private double elevationBias = 0d;
+    private double pushBias = 0d;
+
+    // Bias curve function modified from 7:36 of https://www.youtube.com/watch?v=lctXaT9pxA0.
+    // A graph of this function can be found at https://www.geogebra.org/graphing/wqbhnntr.
+    // DON'T FEED IN NEGATIVE BIAS IT WILL BREAK (will only output values greater than 1).
+    private double biasCurve(double x, double bias, double max, double intercept) {
+        /*
+        x: variable plugged into the equation, e.g. the value of a gamestick.
+        bias: the bias value, how fast x approaches max.
+        max: the maximum value x will reach.
+        intercept: the value at which x = max.
+         */
+
+        // IDK what this does, think it makes bias value appear more exponential.
+        double k = Math.pow( (1 - bias), 3d );
+        // Biased values mapped between 0 and max, with max value being reached at intercept.
+        // Returns value, inverts if x < 0.
+        if (x >= 0) {
+            return ((x * k) / (x * k - x + intercept)) * max;
+        }
+        else {
+            return ((-x * k) / (-x * k + x + intercept)) * -max;
+        }
+    }
 
     @Override
     public void runOpMode() {
@@ -87,26 +121,24 @@ public class Main_Drive extends LinearOpMode {
         while (opModeIsActive()) {
 
             // Setup a variable for each drive wheel to save power level for telemetry
-            double leftPower;
-            double rightPower;
-            double elevationPower;
-            double pushPower;
             // Tank Mode uses one stick to control each wheel.
-            // - This requires no math, but it is hard to drive forward slowly and keep straight.
-             leftPower  = gamepad1.left_stick_y ;
-             rightPower = gamepad1.right_stick_y ;
-             elevationPower = -gamepad2.right_stick_y;
-             pushPower = -gamepad2.left_stick_y;
+            // This requires no math, but it is hard to drive forward slowly and keep straight.
+            double leftPower = gamepad1.left_stick_y;
+            double rightPower = gamepad1.right_stick_y;
+            double elevationPower = gamepad2.right_stick_y * -1;
+            double pushPower = gamepad2.left_stick_y * -1;
 
             // Send calculated power to wheels
-            leftDrive.setPower(leftPower/1.5);
-            rightDrive.setPower(rightPower/1.5);
-            elevation.setPower(elevationPower/1.5);
-            pusher.setPower(pushPower/1.5);
+            leftDrive.setPower( biasCurve(leftPower, leftBias, maxPower, interceptPower));
+            rightDrive.setPower(biasCurve(rightPower, rightBias, maxPower, interceptPower));
+            elevation.setPower(biasCurve(elevationPower, elevationBias, maxPower, interceptPower));
+            pusher.setPower(biasCurve(pushPower, pushBias, maxPower, interceptPower));
+
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+            telemetry.addData("gamepad", "left(%.2f), right (.2f)" , gamepad1.left_stick_y, gamepad1.right_stick_y);
             telemetry.addData("elv and push", "elc (%.2f), right (%.2f)", elevationPower, pushPower);
             telemetry.update();
         }
